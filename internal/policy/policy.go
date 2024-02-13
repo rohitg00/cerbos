@@ -13,6 +13,7 @@ import (
 
 	policyv1 "github.com/cerbos/cerbos/api/genpb/cerbos/policy/v1"
 	"github.com/cerbos/cerbos/internal/namer"
+	"github.com/cerbos/cerbos/internal/parser"
 	"github.com/cerbos/cerbos/internal/util"
 )
 
@@ -265,7 +266,7 @@ func WithMetadata(p *policyv1.Policy, source string, annotations map[string]stri
 	}
 
 	p.Metadata.SourceFile = source
-	p.Metadata.Annotations = annotations
+	p.Metadata.Annotations = mergeAnnotations(p.Metadata.Annotations, annotations)
 	p = WithSourceAttributes(p, sourceAttr...)
 
 	if p.Metadata.StoreIdentifier == "" {
@@ -277,6 +278,25 @@ func WithMetadata(p *policyv1.Policy, source string, annotations map[string]stri
 	}
 
 	return p
+}
+
+func mergeAnnotations(a, b map[string]string) map[string]string {
+	if a == nil {
+		return b
+	}
+
+	if b == nil {
+		return a
+	}
+
+	c := make(map[string]string, len(a)+len(b))
+	for k, v := range a {
+		c[k] = v
+	}
+	for k, v := range b {
+		c[k] = v
+	}
+	return c
 }
 
 // WithStoreIdentifier adds the store identifier to the metadata.
@@ -315,14 +335,14 @@ func GetHash(p *policyv1.Policy) uint64 {
 // GetSourceFile gets the source file name from metadata if it exists.
 func GetSourceFile(p *policyv1.Policy) string {
 	if p == nil {
-		return "unknown<nil>"
+		return "<>"
 	}
 
 	if p.Metadata != nil && p.Metadata.SourceFile != "" {
 		return p.Metadata.SourceFile
 	}
 
-	return fmt.Sprintf("unknown<%s>", namer.FQN(p))
+	return fmt.Sprintf("<%s>", namer.PolicyKey(p))
 }
 
 // Wrapper is a convenience layer over the policy definition.
@@ -389,16 +409,22 @@ func (pw Wrapper) Dependencies() []namer.ModuleID {
 // For example, if a resource policy named R imports derived roles named D, the compilation unit will contain
 // both R and D with the ModID field pointing to R because it is the main policy.
 type CompilationUnit struct {
-	Definitions map[namer.ModuleID]*policyv1.Policy
-	ModID       namer.ModuleID
+	Definitions    map[namer.ModuleID]*policyv1.Policy
+	SourceContexts map[namer.ModuleID]parser.SourceCtx
+	ModID          namer.ModuleID
 }
 
-func (cu *CompilationUnit) AddDefinition(id namer.ModuleID, p *policyv1.Policy) {
+func (cu *CompilationUnit) AddDefinition(id namer.ModuleID, p *policyv1.Policy, sc parser.SourceCtx) {
 	if cu.Definitions == nil {
 		cu.Definitions = make(map[namer.ModuleID]*policyv1.Policy)
 	}
 
+	if cu.SourceContexts == nil {
+		cu.SourceContexts = make(map[namer.ModuleID]parser.SourceCtx)
+	}
+
 	cu.Definitions[id] = p
+	cu.SourceContexts[id] = sc
 }
 
 func (cu *CompilationUnit) MainSourceFile() string {

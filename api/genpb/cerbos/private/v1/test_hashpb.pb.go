@@ -138,14 +138,6 @@ func (m *CompileTestCase) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
 
 // HashPB computes a hash of the message using the given hash function
 // The ignore set must contain fully-qualified field names (pkg.msg.field) that should be ignored from the hash
-func (m *CompileTestCase_Error) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
-	if m != nil {
-		cerbos_private_v1_CompileTestCase_Error_hashpb_sum(m, hasher, ignore)
-	}
-}
-
-// HashPB computes a hash of the message using the given hash function
-// The ignore set must contain fully-qualified field names (pkg.msg.field) that should be ignored from the hash
 func (m *CompileTestCase_Variables) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
 	if m != nil {
 		cerbos_private_v1_CompileTestCase_Variables_hashpb_sum(m, hasher, ignore)
@@ -245,5 +237,21 @@ func (m *ProtoYamlTestCase) HashPB(hasher hash.Hash, ignore map[string]struct{})
 func (m *ProtoYamlTestCase_Want) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
 	if m != nil {
 		cerbos_private_v1_ProtoYamlTestCase_Want_hashpb_sum(m, hasher, ignore)
+	}
+}
+
+// HashPB computes a hash of the message using the given hash function
+// The ignore set must contain fully-qualified field names (pkg.msg.field) that should be ignored from the hash
+func (m *WellKnownTypes) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
+	if m != nil {
+		cerbos_private_v1_WellKnownTypes_hashpb_sum(m, hasher, ignore)
+	}
+}
+
+// HashPB computes a hash of the message using the given hash function
+// The ignore set must contain fully-qualified field names (pkg.msg.field) that should be ignored from the hash
+func (m *WellKnownTypes_Nested) HashPB(hasher hash.Hash, ignore map[string]struct{}) {
+	if m != nil {
+		cerbos_private_v1_WellKnownTypes_Nested_hashpb_sum(m, hasher, ignore)
 	}
 }
